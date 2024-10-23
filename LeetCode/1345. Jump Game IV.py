@@ -1,73 +1,52 @@
 from collections import deque
-from typing import List
+from typing import List, Dict
 
 
 class Solution:
     def minJumps(self, arr: List[int]) -> int:
-        graph = Graph()
+        if len(arr) == 1:
+            return 0
 
-        for i in range(len(arr)):
-            graph.add(i)
-
-        added_numbers = dict(set())
+        added_numbers: Dict[int, set] = dict()
 
         for i in range(len(arr)):
             if arr[i] not in added_numbers:
-                added_numbers.update({arr[i]: set()})
-            for j in added_numbers[arr[i]]:
-                graph.add_edge(j, i)
+                added_numbers[arr[i]] = set()
             added_numbers[arr[i]].add(i)
 
-            if i > 0:
-                graph.add_edge(i, i - 1)
-            if i < len(arr) - 1:
-                graph.add_edge(i, i + 1)
-
         #print(added_numbers)
-        #print(graph)
-        v = self.bfs(graph)
 
-        if v is None:
-            return 0
-        return v
-
-    def bfs(self, graph: dict) -> int:
-
-        q = deque()
-        visited = [False] * len(graph)
-
+        q = deque([0])
+        visited = [False] * len(arr)
         visited[0] = True
-        q.append(0)
 
-        vertices = dict({0: 0})
+        steps = 0
 
         while q:
 
-            curr = q.popleft()
-            #print(curr, end=" ")
+            for _ in range(len(q)):
+                curr = q.popleft()
+                #print(str(curr) + " steps = " + str(steps))
+                if curr == len(arr) - 1:
+                    return steps
 
-            for i in graph[curr]:
-                if not visited[i]:
-                    visited[i] = True
-                    q.append(i)
-                    if i == len(graph) - 1:
-                        return vertices[curr] + 1
-                    vertices.update({i: vertices[curr] + 1})
+                if curr > 0 and visited[curr - 1] is False:
+                    visited[curr - 1] = True
+                    q.append(curr - 1)
 
+                if curr < len(arr) - 1 and visited[curr + 1] is False:
+                    visited[curr + 1] = True
+                    q.append(curr + 1)
 
-class Graph(dict):
-    def add(self, v):
-        self[v] = set()
+                if arr[curr] in added_numbers:
+                    for i in added_numbers[arr[curr]]:
 
-    def add_edge(self, u, v):
-        self[u].add(v)
-        self[v].add(u)
+                        if visited[i] is False:
+                            visited[i] = True
+                            q.append(i)
+                    del added_numbers[arr[curr]]
 
-    def add_edge_set(self, v: int, s: set):
-        self
-
-    def delete_v(self, v):
-        self.pop(self[v])
+            steps += 1
 
 
 x = Solution()
